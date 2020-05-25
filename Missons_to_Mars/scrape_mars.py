@@ -5,6 +5,7 @@ import time
 import pandas as pd
 
 
+
 def init_browser():
     # @NOTE: Replace the path with your actual path to the chromedriver
     executable_path = {'executable_path': 'chromedriver.exe'}
@@ -64,8 +65,20 @@ def get_mars_weather(browser):
     soup = BeautifulSoup(html, "html.parser")
 
     #Find article with class
-    match = soup.find_all('article', attrs={'role': 'article'})[0]
-    print(match)
+    attempts = 0
+    haveData = False
+    while attempts < 5 and not haveData:
+        time.sleep(1)
+        html = browser.html
+        soup = BeautifulSoup(html, "html.parser")
+        matches = soup.find_all('article', attrs={'role': 'article'})
+        if matches:
+            haveData = True
+    
+    # We want the first entry only
+    match = matches[0]
+    
+    #print(match)
     spans = match.find_all('span')
     weather = None
     for span in spans:
@@ -77,11 +90,10 @@ def get_mars_weather(browser):
 
     return weather
 
-def get_nasa_image(browser):
+def get_nasa_full_image(browser):
     url = "https://www.jpl.nasa.gov/spaceimages/?search=&category=Mars"
     browser.visit(url)
 
-    time.sleep(1)
     browser.click_link_by_partial_text('FULL IMAGE')
 
     attempts = 0
@@ -96,6 +108,32 @@ def get_nasa_image(browser):
             haveData = True
 
     return f"{url}/{image['src']}"
+
+
+def get_nasa_image(browser):
+    base_url = "https://www.jpl.nasa.gov"
+    url = f"{base_url}/spaceimages?search=&category=Mars"
+    browser.visit(url)
+
+    attempts = 0
+    haveData = False
+    while attempts < 5 and not haveData:
+        time.sleep(1)
+        html = browser.html
+        soup = BeautifulSoup(html, "html.parser")
+
+        section = soup.find_all("section", class_="main_feature")[0]
+        if section:
+            article = section.find("article")
+        if article: 
+            style = article["style"]
+            idx = style.find("url('")
+            img_text = style[idx+5:]
+            image = img_text[0:len(img_text) -3]
+        if image:
+            haveData = True
+
+    return f"{base_url}{image}"
 
 def get_nasa_news(browser):
     listings = []
@@ -132,19 +170,31 @@ def scrape():
     listings = get_nasa_news(browser)
     nasa_imag = get_nasa_image(browser)
     weather = get_mars_weather(browser)
+    facts = get_mars_facts()
+    hemispheres = get_mars_hemisphers(browser)
 
     browser.quit()
-    return listings, nasa_imag, weather
-    #return listings, nasa_imag, weather
+
+
+    return {"mars_news" : listings, 
+            "featured_image_url": nasa_imag,
+            "mars_weather" : weather,
+            "mars_facts" : facts,
+            "mars_hemispheres" : hemispheres}
+    
 
 
 
-browser = init_browser()
+# browser = init_browser()
 # facts = get_mars_facts()
 # print(facts)
 
-hemispheres = get_mars_hemisphers(browser)
-print(hemispheres)
+# hemispheres = get_mars_hemisphers(browser)
+# print(hemispheres)
+#img = get_nasa_image(browser)
+# mars_data = scrape()
 
-browser.quit()
+# print(mars_data)
+
+# browser.quit()
 
