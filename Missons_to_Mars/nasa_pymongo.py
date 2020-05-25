@@ -14,5 +14,5 @@ def insert_mars_data(mars_data):
     print("Mars Data Uploaded!")
 
 def get_mars_data():
-    mars_data = db.mars.find()
+    mars_data = db.mars.find_one()
     return mars_data

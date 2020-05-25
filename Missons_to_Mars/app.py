@@ -12,9 +12,12 @@ app = Flask(__name__)
 def scrape_data():
     mars_data = scrape()
     insert_mars_data(mars_data)
-    return "Mars data updated to nasa database"
+    return render_template("redirect.html")
 
 @app.route("/")
 def home():
     mars_data = get_mars_data()
+    for data in mars_data:
+        print(data.title)
+    print(mars_data["mars_news"])
     return render_template("mars.html", mars_data = mars_data)

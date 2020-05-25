@@ -2,35 +2,123 @@
 <html lang="en">
 
 <head>
-    <title>Bootstrap Example</title>
+    <title>NASA Mars Data</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="styles/bootstrap.min.css">
-    <link rel="stylesheet" href="styles/bootstrap.css">
-    <link rel="stylesheet" href="styles/style.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/bootstrap.min.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/bootstrap.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/style.css') }}">
+
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+    <script>
+        function scrapeData() {
+            var x = document.getElementById("ScrapeButton");
+            x.style.display = "none";
+            window.open('/scrape', '_self');
+        }
+    </script>
 
 </head>
 
 <body>
 
-    <div class="container-fluid text-center">
-       
-    </div>
+    <div class="container">
+        <div class="page-header" id="banner">
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="jumbotron">
+                        <h1 class="display-3 text-center">Mission to Mars</h1>
+                        <div class="row justify-content-center">
+                            <div id=ScrapeButton class="col-md-3 multi-collapse">
+                                <button type="button" class="btn btn-primary btn-lg btn-block" data-toggle="collapse"
+                                    data-target=".multi-collapse" aria-expanded="true" onclick="scrapeData();"
+                                    aria-controls="ScrapeLoading">
+                                    Scrape New Data
+                                </button>
+                            </div>
+                            <div id=ScrapeLoading class="col-md-2 collapse multi-collapse">
+                                <h3>Data Scrape In Progress</h3>
+                            </div>
+                        </div>
 
-    <footer class="container-fluid text-center">
-        <p>Footer Text</p>
-    </footer>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <main>
+            <div class="row">
+                <div class="col-md-12">
+                    <h3>Latest Mars News</h3>
+                    {% for data in mars_data["mars_news"] %}
+                    <div class="row">
+                        <div class="card border-primary mb-3">
+                            <div class="card-body">
+                                <h5 class="card-title news">{{data["title"]}}</h5>
+                                <p class="card-text">{{data["paragraph"]}}</p>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-8">
+                    <h3>Featured Mars Image</h3>
+                    <img class="featured" alt="Featured Mars Image" src="{{mars_data['featured_image_url']}}">
+                </div>
+                <div class="col-md-4">
+                    <div class="row">
+                        <div class="card bg-light mb-3">
+                            <div class="card-body">
+                                <h4 class="card-title">Current Weather on Mars</h4>
+                                <p class="card-text">{{mars_data["mars_weather"]}}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="card text-white bg-info mb-3">
+                            <div class="card-body">
+                                <h4 class="card-title">Mars Facts</h4>
+                                {% autoescape on %}
+                                {{ mars_data["mars_facts"] }}
+                                {% endautoescape %}
+                            </div>
+                        </div>
 
-    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
-        integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
-        crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"
-        integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1"
-        crossorigin="anonymous"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
-        integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
-        crossorigin="anonymous"></script>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12">
+                    <h3 class="text-center">Mars Hemisphers</h3>
+                </div>
+                <div class="row container-fluid">
+                    {% for hemisphere in mars_data["mars_hemispheres"] %}
+                    <div class="col-md-6">
+                        <img class="featured" alt="{{hemisphere['title']}}" src="{{hemisphere['img_url']}}">
+                        <p class="text-primary">{{hemisphere['title']}}</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </main>
+
+        <footer class="container-fluid text-center">
+            <br>
+            <hr>
+            <p>Copyright 2020 Trilogy</p>
+        </footer>
+
+        <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+            integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+            crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"
+            integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1"
+            crossorigin="anonymous"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
+            integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
+            crossorigin="anonymous"></script>
 
 </body>
 

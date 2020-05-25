@@ -53,8 +53,10 @@ def get_mars_facts():
     facts = tables[0]
 
     facts_df = pd.DataFrame(facts) 
+    facts_df.columns = ["description", "value"]
+    facts_df.set_index("description", inplace=True)
 
-    return facts_df.to_html(index=False, header=False)
+    return facts_df.to_html(index=True, header=True)
 
 
 def get_mars_weather(browser):
