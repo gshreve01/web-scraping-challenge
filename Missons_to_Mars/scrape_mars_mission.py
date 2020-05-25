@@ -10,6 +10,41 @@ def init_browser():
     executable_path = {'executable_path': 'chromedriver.exe'}
     return Browser('chrome', **executable_path, headless=False)
 
+def get_mars_hemisphers(browser):
+    hemispheres = []
+
+    base_url = "https://astrogeology.usgs.gov"
+    url = f"{base_url}/search/results?q=hemisphere+enhanced&k1=target&v1=Mars"
+    browser.visit(url)
+
+    html = browser.html
+    soup = BeautifulSoup(html, "html.parser")
+    # Find all items
+    links = []
+    items = soup.find_all("div", class_="item")
+    for item in items: 
+        description = item.find("div", class_="description")      
+        link = description.find("a", class_="product-item")
+        links.append(link)
+
+    for link in links:
+        title = link.find("h3").get_text()
+        image_url = get_hemispher_image(browser, base_url, link["href"])
+        image_url = f"{base_url}{image_url}"
+        hemispheres.append({"title": title,
+                    "img_url": image_url})
+
+    return hemispheres
+
+def get_hemispher_image(browser, url, link):
+    linkurl = f"{url}/{link}"
+    browser.visit(linkurl)
+    html = browser.html
+    soup = BeautifulSoup(html, "html.parser")   
+
+    image = soup.find("img", class_="wide-image") 
+    return image["src"]
+
 def get_mars_facts():
  
     url = "https://space-facts.com/mars/"
@@ -105,7 +140,11 @@ def scrape():
 
 
 browser = init_browser()
-facts = get_mars_facts()
-print(facts)
+# facts = get_mars_facts()
+# print(facts)
+
+hemispheres = get_mars_hemisphers(browser)
+print(hemispheres)
+
 browser.quit()
 
