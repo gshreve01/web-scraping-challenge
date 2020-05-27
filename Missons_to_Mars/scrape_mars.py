@@ -16,13 +16,36 @@ def get_mars_hemisphers(browser):
 
     base_url = "https://astrogeology.usgs.gov"
     url = f"{base_url}/search/results?q=hemisphere+enhanced&k1=target&v1=Mars"
-    browser.visit(url)
+    print(url)
 
-    html = browser.html
-    soup = BeautifulSoup(html, "html.parser")
+    successfulPageLoad = False
+    attempts = 0
+    while attempts < 5 and not successfulPageLoad:
+        browser.visit(url)
+        html = browser.html
+        # just consider the length
+        if len(html) > 500:
+            successfulPageLoad = True
+        else:
+            attempts += 1
+            print(f"Failed attempt {attempts} to load {url}.")
+
     # Find all items
     links = []
-    items = soup.find_all("div", class_="item")
+
+    #Find article with class
+    attempts = 0
+    haveData = False
+    while attempts < 5 and not haveData:
+        time.sleep(1)
+        html = browser.html
+        soup = BeautifulSoup(html, "html.parser")
+        items = soup.find_all("div", class_="item")
+        if items:
+            haveData = True
+        else:
+            attempts += 1
+
     for item in items: 
         description = item.find("div", class_="description")      
         link = description.find("a", class_="product-item")
@@ -39,6 +62,7 @@ def get_mars_hemisphers(browser):
 
 def get_hemispher_image(browser, url, link):
     linkurl = f"{url}/{link}"
+    print(linkurl)
     browser.visit(linkurl)
     html = browser.html
     soup = BeautifulSoup(html, "html.parser")   
@@ -76,18 +100,20 @@ def get_mars_weather(browser):
         matches = soup.find_all('article', attrs={'role': 'article'})
         if matches:
             haveData = True
-    
-    # We want the first entry only
-    match = matches[0]
-    
-    #print(match)
-    spans = match.find_all('span')
+        else:
+            attempts += 1
+
+    # it may not be in the first match
     weather = None
-    for span in spans:
-        # should begin with InSight
-        text = span.get_text()
-        if text[0:7] == "InSight":
-            weather = text
+    for match in matches:
+        spans = match.find_all('span')
+        for span in spans:
+            # should begin with InSight
+            text = span.get_text()
+            if text[0:7] == "InSight":
+                weather = text
+                break
+        if weather != None:
             break
 
     return weather
@@ -108,6 +134,8 @@ def get_nasa_full_image(browser):
         image = soup.find_all("img", class_="fancybox-image")[0]
         if image:
             haveData = True
+        else:
+            attempts += 1
 
     return f"{url}/{image['src']}"
 
@@ -134,6 +162,8 @@ def get_nasa_image(browser):
             image = img_text[0:len(img_text) -3]
         if image:
             haveData = True
+        else:
+            attempts += 1            
 
     return f"{base_url}{image}"
 
@@ -153,6 +183,8 @@ def get_nasa_news(browser):
         slides = soup.find_all("li", class_="slide")
         if slides:
             haveData = True
+        else:
+            attempts += 1            
 
     if not haveData:
         raise Exception("Failed to scrape nasa news site")
@@ -184,9 +216,6 @@ def scrape():
             "mars_facts" : facts,
             "mars_hemispheres" : hemispheres}
     
-
-
-
 # browser = init_browser()
 # facts = get_mars_facts()
 # print(facts)

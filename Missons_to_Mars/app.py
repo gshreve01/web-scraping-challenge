@@ -17,7 +17,10 @@ def scrape_data():
 @app.route("/")
 def home():
     mars_data = get_mars_data()
-    for data in mars_data:
-        print(data.title)
-    print(mars_data["mars_news"])
-    return render_template("mars.html", mars_data = mars_data)
+    if mars_data:
+        for data in mars_data:
+            print(data.title)
+        print(mars_data["mars_news"])
+        return render_template("mars.html", mars_data = mars_data)
+    else:
+        return render_template("init_load.html")
